@@ -1,0 +1,30 @@
+start: statement
+
+statement: abs_statement (OPERATOR statement)*
+	 | rel_time (OPERATOR statement)*
+
+abs_statement: abs_time "to" abs_time
+
+abs_time: HOUR_NUM (":" MINUTE_NUM)? (am | pm)
+
+rel_time: (INT | DECIMAL) (hour | min)
+
+min: "minutes" | "minute" | "mins" | "min" | "m"
+
+hour: "hours" | "hour" | "h"
+
+OPERATOR: "-" | "+"
+
+HOUR_NUM: "1" "0".."2"
+	| "0" "1".."9"
+	| "1".."9"
+
+MINUTE_NUM: "0".."5" "0".."9"
+
+am: "am" | "AM" | "aM" | "Am"
+pm: "pm" | "PM" | "pM" | "Pm"
+
+%import common.INT -> INT
+%import common.DECIMAL -> DECIMAL
+%import common.WS
+%ignore WS
