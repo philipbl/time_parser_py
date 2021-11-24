@@ -61,7 +61,12 @@ def run(t):
         first_time, second_time = abs_statement.children
         first_time_minutes = parse_abs_time(first_time)
         second_time_minutes = parse_abs_time(second_time)
+
         minutes = second_time_minutes - first_time_minutes
+        
+        if minutes < 0:
+            # We rolled over to different day
+            minutes += 24 * 60
 
     if first.data == "rel_time":
         rel_time = first
