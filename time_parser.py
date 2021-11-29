@@ -9,16 +9,17 @@ p = inflect.engine()
 operations = {"+": add, "-": sub}
 OUTPUT = "hour"
 
+
 def parse_rel_time(token):
     number, description = token.children
-    
+
     if number.type == "INT":
         number = int(number)
     elif number.type == "DECIMAL":
         number = float(number)
     else:
         raise SyntaxError("Unknown number type: %s" % number.type)
-        
+
     if description.data == "hour":
         number *= 60
     elif description.data == "min":
@@ -27,6 +28,7 @@ def parse_rel_time(token):
         raise SyntaxError("Unknown time description: %s" % description.data)
 
     return number
+
 
 def parse_abs_time(token):
     if len(token.children) == 3:
@@ -52,10 +54,11 @@ def parse_abs_time(token):
 
     return total_minutes
 
+
 def run(t):
     # t is always a statement
     first, *rest = t.children
-    
+
     if first.data == "abs_statement":
         abs_statement = first
         first_time, second_time = abs_statement.children
@@ -63,7 +66,7 @@ def run(t):
         second_time_minutes = parse_abs_time(second_time)
 
         minutes = second_time_minutes - first_time_minutes
-        
+
         if minutes < 0:
             # We rolled over to different day
             minutes += 24 * 60
@@ -81,7 +84,11 @@ def run(t):
 
 @click.group()
 @click.option("--debug/--no-debug", default=False)
-@click.option("--output", type=click.Choice(["hour", "minute", "both"], case_sensitive=False), default="both")
+@click.option(
+    "--output",
+    type=click.Choice(["hour", "minute", "both"], case_sensitive=False),
+    default="both",
+)
 def cli(debug, output):
     global OUTPUT
 
@@ -90,10 +97,12 @@ def cli(debug, output):
 
     OUTPUT = output
 
+
 @cli.command()
 @click.argument("input", nargs=-1)
 def command(input):
     parse(" ".join(input))
+
 
 @cli.command()
 @click.argument("input", type=click.File("r"))
@@ -113,7 +122,6 @@ def parse(input):
     logger.debug(parse_tree)
 
     minutes = run(parse_tree.children[0])
-
 
     if OUTPUT == "hour":
         # Cast to int if there is no remainder
@@ -136,7 +144,6 @@ def parse(input):
             print(minutes, p.plural("minute", minutes))
         else:
             print(hours, p.plural("hour", hours), minutes, p.plural("minute", minutes))
-
 
 
 if __name__ == "__main__":
