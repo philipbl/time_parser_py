@@ -56,11 +56,17 @@ def parse_abs_time(token):
 
 
 def run(t):
-    # t is always a statement
-    first, *rest = t.children
+    if t.data == "statement":
+        if len(t.children) == 1:
+            (first,) = t.children
+            return run(first)
+        else:
+            first, operator, second = t.children
+            operator = operations[operator]
+            return operator(run(first), run(second))
 
-    if first.data == "abs_statement":
-        abs_statement = first
+    elif t.data == "abs_statement":
+        abs_statement = t
         first_time, second_time = abs_statement.children
         first_time_minutes = parse_abs_time(first_time)
         second_time_minutes = parse_abs_time(second_time)
@@ -71,15 +77,14 @@ def run(t):
             # We rolled over to different day
             minutes += 24 * 60
 
-    if first.data == "rel_time":
-        rel_time = first
-        minutes = parse_rel_time(rel_time)
-
-    if len(rest) == 0:
         return minutes
+
+    elif t.data == "rel_time":
+        rel_time = t
+        return parse_rel_time(rel_time)
+
     else:
-        operator = operations[rest[0]]
-        return operator(minutes, run(rest[1]))
+        raise SyntaxError("Unknown token: %s" % t.data)
 
 
 @click.group()
@@ -121,7 +126,7 @@ def parse(input):
     logger.debug(parse_tree.pretty())
     logger.debug(parse_tree)
 
-    minutes = run(parse_tree.children[0])
+    minutes = int(run(parse_tree.children[0]))
 
     if OUTPUT == "hour":
         # Cast to int if there is no remainder
@@ -136,7 +141,7 @@ def parse(input):
 
     elif OUTPUT == "both":
         hours = int(minutes / 60)
-        minutes = minutes % 60
+        minutes = int(minutes % 60)
 
         if minutes == 0:
             print(hours, p.plural("hour", hours))

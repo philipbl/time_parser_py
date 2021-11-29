@@ -1,7 +1,7 @@
 start: statement
 
-statement: abs_statement (OPERATOR statement)*
-	 | rel_time (OPERATOR statement)*
+statement: (statement OPERATOR)* abs_statement
+	 | (statement OPERATOR)* rel_time
 
 abs_statement: abs_time "to" abs_time
 
